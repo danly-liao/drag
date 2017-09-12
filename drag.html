@@ -1,0 +1,182 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>无标题文档</title>
+<style>
+div{width: 100px; height: 100px; background: red; position:absolute;}
+#odiv2{width: 100px; height: 100px; background: yellow; position:absolute;}
+
+</style>
+<script>
+// window.onload=function(){
+
+// var p1=document.getElementById('odiv1');
+// var disx=null,disy=null;
+// p1.onmousedown=function(ev){
+// 	var event=ev||window.event;
+// 	disx=event.clientX-p1.offsetLeft;
+// 	disy=event.clientY-p1.offsetTop;
+
+// 	document.onmousemove=function(ev){
+// 		var event= ev||window.event;
+// 		p1.style.left=event.clientX-disx+'px';
+// 		p1.style.top=event.clientY-disy+'px';
+// 	}
+
+// 	document.onmouseup=function(ev){
+// 		document.onmouseup=null;
+// 		document.onmousemove=null;
+// 	}
+
+// }
+// }	
+
+window.onload=function(){
+	var p1=new Darg('odiv1');
+		p1.inti();
+		bindEvent(p1,'todown',function(){
+				document.title="hello";
+			});
+	var p2=new Childdarg('odiv2');
+		// p2.inti({
+		// toup:function(){
+		// 	document.title="不好";
+		// },
+		// todown:function(){
+		// 		document.title="你好";
+		// }
+		// });
+		p2.inti();
+			bindEvent(p2,'toup',function(){
+				document.title="不好";
+			});
+				bindEvent(p2,'todown',function(){
+				document.title="你好";
+			});
+}
+
+function Darg(id){
+	this.obj=document.getElementById(id);
+	this.disx=null;
+	this.disy=null;
+	// this.setings={
+	// 	toup:function(){},
+	// 	todown:function(){}
+	// }
+}
+Darg.prototype.inti=function(){
+	var that=this;
+	//extend(this.setings,opt);
+	this.obj.onmousedown=function(ev){
+		var event=ev||window.event;
+    	that.fndown(event); 
+    	fireEvent(that,'todown');
+    };
+}
+Darg.prototype.fndown=function(event){
+	var that=this;
+	this.disx=event.clientX-this.obj.offsetLeft;
+	this.disy=event.clientY-this.obj.offsetTop;
+	document.onmousemove=function(ev){
+		var event= ev||window.event;
+    	that.fnmove(event);
+    	//that.setings.todown();
+    	
+
+    };
+    document.onmouseup=function(){
+    	that.fnup();
+    	// that.setings.toup();
+    		 fireEvent(that,'toup');
+    };	
+}
+Darg.prototype.fnmove=function(event){
+		this.obj.style.left=event.clientX-this.disx+'px';
+		this.obj.style.top=event.clientY-this.disy+'px';
+}
+Darg.prototype.fnup=function(){
+	document.onmouseup=null;
+	document.onmousemove=null;
+
+}
+
+function Childdarg(id){
+	Darg.call(this,id);
+}
+//拷贝继承:
+extend(Childdarg.prototype, Darg.prototype);
+function extend(childobj,obj){
+	for(var attr in obj)
+	{
+		childobj[attr]=obj[attr];
+	}
+}
+
+
+//类式继承:new构造函数
+// var fn=function(){}
+// fn.prototype=Darg.prototype;
+// Childdarg.prototype=new Darg();
+// Childdarg.prototype.constrcutor=Childdarg;
+
+
+// 原型继承:无NEw的时候，比方说JSON
+// Childdarg.prototype=cloneobj(Darg.prototype);
+// function cloneobj(obj)
+// {
+// 	var f=function(){};
+// 	f.prototype=obj;
+// 	return new f();
+// }
+
+Childdarg.prototype.fnmove=function(event){
+	var l=event.clientX-this.disx;
+	var t=event.clientY-this.disy;
+	if(l<0)
+	{ 
+		l=0;
+	}else if(l>document.documentElement.clientWidth-this.obj.offsetWidth)
+	{
+		l=document.documentElement.clientWidth-this.obj.offsetWidth;
+	}
+	if(t<0)
+	{ 
+		t=0;
+	}else if(t>document.documentElement.clientHeight-this.obj.offsetHeight)
+	{
+		t=document.documentElement.clientHeight-this.obj.offsetHeight;
+	}
+		this.obj.style.left=l+'px';
+		this.obj.style.top=t+'px';
+}
+function bindEvent(obj,events,fn){
+	obj.listeners=obj.listeners||{};
+	obj.listeners[events]=obj.listeners[events]||[];
+	obj.listeners[events].push(fn);
+
+	if(obj.nodeType){
+		if(obj.addEventListener){
+			obj.addEventListener(events,fn,false);
+		}
+		else{
+			obj.attachEvent('on'+events,fn);
+		}
+	}
+}
+function fireEvent(obj,events){
+	 if(obj.listeners&&obj.listeners[events]){
+	 	for(var i=0;i<obj.listeners[events].length;i++)
+	 	{
+	 		obj.listeners[events][i]();
+	 	}
+	 }
+}
+</script>
+</head>
+<body>
+
+	<div id="odiv1"></div>
+	<div id="odiv2"></div>
+</body>
+</html>
